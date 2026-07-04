@@ -22,6 +22,8 @@ SMTP_CONFIGS = {
 
 def detect_smtp_config(email: str) -> dict:
     """根据邮箱后缀自动检测 SMTP 配置"""
+    if not email:
+        return {'server': 'smtp.gmail.com', 'port': 587}
     email = email.lower().strip()
     for domain, config in SMTP_CONFIGS.items():
         if email.endswith(f'@{domain}'):
@@ -39,10 +41,12 @@ class EmailSender:
             # 自动检测 SMTP 配置
             smtp_config = detect_smtp_config(from_addr)
 
-            # 允许手动覆盖
-            port_str = os.getenv('EMAIL_PORT', str(smtp_config['port'])).strip()
+            # 允许手动覆盖（非空值才使用）
+            email_server = os.getenv('EMAIL_SERVER')
+            port_str = os.getenv('EMAIL_PORT')
+
             try:
-                port = int(port_str)
+                port = int(port_str) if port_str and port_str.strip() else smtp_config['port']
             except ValueError:
                 print(f"Invalid EMAIL_PORT: {port_str}, using default {smtp_config['port']}")
                 port = smtp_config['port']
@@ -51,7 +55,7 @@ class EmailSender:
                 'from_addr': from_addr,
                 'password': os.getenv('EMAIL_PASSWORD'),
                 'to_addr': os.getenv('EMAIL_TO'),
-                'server': os.getenv('EMAIL_SERVER', smtp_config['server']),
+                'server': email_server if email_server and email_server.strip() else smtp_config['server'],
                 'port': port
             }
 

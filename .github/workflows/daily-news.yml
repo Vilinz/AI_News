@@ -27,7 +27,5 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_SERVER: ${{ secrets.EMAIL_SERVER }}
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
         run: |
           python src/main.py
