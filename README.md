@@ -31,9 +31,21 @@
 
 在 GitHub Secrets 中设置：
 
-- `GLM_API_KEY`: GLM 模型 API 密钥
-- `EMAIL_FROM`: 发件邮箱
-- `EMAIL_PASSWORD`: 邮箱密码/授权码
-- `EMAIL_TO`: 收件邮箱
-- `EMAIL_SERVER`: SMTP 服务器地址（如 smtp.gmail.com）
-- `EMAIL_PORT`: SMTP 端口（如 587）
+| Secret | 说明 | 示例 |
+|--------|------|------|
+| `GLM_API_KEY` | GLM 模型 API 密钥 | - |
+| `EMAIL_FROM` | 发件邮箱（自动检测 SMTP） | `your_email@qq.com` |
+| `EMAIL_PASSWORD` | 邮箱授权码 | - |
+| `EMAIL_TO` | 收件邮箱 | - |
+
+### 支持自动检测的邮箱
+
+| 邮箱 | SMTP 服务器 | 端口 |
+|------|-------------|------|
+| QQ 邮箱 | smtp.qq.com | 465 |
+| 163 邮箱 | smtp.163.com | 465 |
+| 126 邮箱 | smtp.126.com | 465 |
+| Gmail | smtp.gmail.com | 587 |
+| Outlook | smtp-mail.outlook.com | 587 |
+
+其他邮箱需手动配置 `EMAIL_SERVER` 和 `EMAIL_PORT`。

@@ -9,23 +9,49 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+SMTP_CONFIGS = {
+    'qq.com': {'server': 'smtp.qq.com', 'port': 465},
+    '163.com': {'server': 'smtp.163.com', 'port': 465},
+    '126.com': {'server': 'smtp.126.com', 'port': 465},
+    'gmail.com': {'server': 'smtp.gmail.com', 'port': 587},
+    'outlook.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
+    'hotmail.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
+    'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 587},
+}
+
+
+def detect_smtp_config(email: str) -> dict:
+    """根据邮箱后缀自动检测 SMTP 配置"""
+    email = email.lower().strip()
+    for domain, config in SMTP_CONFIGS.items():
+        if email.endswith(f'@{domain}'):
+            return config
+    return {'server': 'smtp.gmail.com', 'port': 587}
+
+
 class EmailSender:
     def __init__(self, config: dict = None):
         if config:
             self.config = config
         else:
-            port_str = os.getenv('EMAIL_PORT', '587').strip()
+            from_addr = os.getenv('EMAIL_FROM')
+
+            # 自动检测 SMTP 配置
+            smtp_config = detect_smtp_config(from_addr)
+
+            # 允许手动覆盖
+            port_str = os.getenv('EMAIL_PORT', str(smtp_config['port'])).strip()
             try:
                 port = int(port_str)
             except ValueError:
-                print(f"Invalid EMAIL_PORT: {port_str}, using default 587")
-                port = 587
+                print(f"Invalid EMAIL_PORT: {port_str}, using default {smtp_config['port']}")
+                port = smtp_config['port']
 
             self.config = {
-                'from_addr': os.getenv('EMAIL_FROM'),
+                'from_addr': from_addr,
                 'password': os.getenv('EMAIL_PASSWORD'),
                 'to_addr': os.getenv('EMAIL_TO'),
-                'server': os.getenv('EMAIL_SERVER', 'smtp.gmail.com'),
+                'server': os.getenv('EMAIL_SERVER', smtp_config['server']),
                 'port': port
             }
 
