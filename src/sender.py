@@ -1,4 +1,5 @@
 import smtplib
+import ssl
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -13,12 +14,19 @@ class EmailSender:
         if config:
             self.config = config
         else:
+            port_str = os.getenv('EMAIL_PORT', '587').strip()
+            try:
+                port = int(port_str)
+            except ValueError:
+                print(f"Invalid EMAIL_PORT: {port_str}, using default 587")
+                port = 587
+
             self.config = {
                 'from_addr': os.getenv('EMAIL_FROM'),
                 'password': os.getenv('EMAIL_PASSWORD'),
                 'to_addr': os.getenv('EMAIL_TO'),
                 'server': os.getenv('EMAIL_SERVER', 'smtp.gmail.com'),
-                'port': int(os.getenv('EMAIL_PORT', 587))
+                'port': port
             }
 
         self._validate_config()
@@ -42,10 +50,17 @@ class EmailSender:
         msg.attach(MIMEText(html_content, 'html'))
 
         try:
-            with smtplib.SMTP(self.config['server'], self.config['port']) as server:
-                server.starttls()
-                server.login(self.config['from_addr'], self.config['password'])
-                server.send_message(msg)
+            # 根据端口选择连接方式
+            if self.config['port'] == 465:
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(self.config['server'], self.config['port'], context=context, timeout=10) as server:
+                    server.login(self.config['from_addr'], self.config['password'])
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(self.config['server'], self.config['port'], timeout=10) as server:
+                    server.starttls()
+                    server.login(self.config['from_addr'], self.config['password'])
+                    server.send_message(msg)
             return True
         except Exception as e:
             print(f"Failed to send email: {e}")
