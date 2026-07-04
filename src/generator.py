@@ -17,14 +17,14 @@ class GLMContentGenerator:
         """使用 GLM 生成每日摘要"""
         today = str(datetime.now().date())
 
-        # 构建输入内容
+        # 构建输入内容（包含链接）
         tech_section = "\n".join([
-            f"- {item['title']} ({item['source']})\n  {item['summary']}"
+            f"- {item['title']} | {item['link']}\n  {item['summary']}"
             for item in news_data['tech_news']
         ])
 
         ai_section = "\n".join([
-            f"- {item['title']} ({item['source']})\n  {item['summary']}"
+            f"- {item['title']} | {item['link']}\n  {item['summary']}"
             for item in news_data['ai_news']
         ])
 
@@ -44,7 +44,8 @@ class GLMContentGenerator:
 ## GitHub热门项目
 {github_section}
 
-请用简洁明了的中文撰写，突出重点，每个板块保留3-5条最精彩的内容，并给出简短的点评。"""
+请用简洁明了的中文撰写，突出重点，每个板块保留3-5条最精彩的内容，并给出简短的点评。
+重要：在输出时，每条新闻必须保留原始链接，格式为「标题 | 链接」"""
 
         try:
             response = requests.post(
