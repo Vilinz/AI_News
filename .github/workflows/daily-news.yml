@@ -1,0 +1,33 @@
+name: Daily Tech News
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 每天 8:00 UTC 运行（可根据时区调整）
+  workflow_dispatch:     # 允许手动触发
+
+jobs:
+  send-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run news fetcher and sender
+        env:
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SERVER: ${{ secrets.EMAIL_SERVER }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        run: |
+          python src/main.py
