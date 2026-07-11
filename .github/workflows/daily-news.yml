@@ -27,7 +27,7 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
           MODEL: ${{ secrets.MODEL || 'openrouter/free' }}
           API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://openrouter.ai/api/v1' }}
-          MAX_TOKENS: ${{ secrets.MAX_TOKENS || '20000' }}
+          MAX_TOKENS: ${{ secrets.MAX_TOKENS || '100000' }}
           TIMEOUT: ${{ secrets.TIMEOUT || '60' }}
           MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
 

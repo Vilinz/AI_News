@@ -44,31 +44,20 @@ class GLMContentGenerator:
             for item in news_data.get('toutiao_hot', [])
         ])
 
-        # Build toutiao content (without links)
+        # Build toutiao content (without links, no numbering) - use all configured data
         tech_headlines = "\n".join([
             f"- {item['title']}\n  {item['summary']}"
-            for item in news_data['tech_news'][:3]  # 科技热点精选3条
+            for item in news_data['tech_news']
         ])
 
         ai_headlines = "\n".join([
             f"- {item['title']}\n  {item['summary']}"
-            for item in news_data['ai_news'][:2]  # AI热点精选2条
-        ])
-
-        # Build toutiao content (without links, no numbering)
-        tech_headlines = "\n".join([
-            f"- {item['title']}\n  {item['summary']}"
-            for item in news_data['tech_news'][:3]  # 科技热点精选3条
-        ])
-
-        ai_headlines = "\n".join([
-            f"- {item['title']}\n  {item['summary']}"
-            for item in news_data['ai_news'][:2]  # AI热点精选2条
+            for item in news_data['ai_news']
         ])
 
         github_headlines = "\n".join([
             f"- {item['name']}\n  {item['description']} (⭐ {item['stars']})"
-            for item in news_data['github_trending'][:2]  # GitHub精选2条
+            for item in news_data['github_trending']
         ])
 
         headlines_section = f"""科技热点
@@ -83,7 +72,7 @@ GitHub热门
 Toutiao Hot Topics (for generating comments)
 {toutiao_hot_section}"""
 
-        prompt = f"""今日是 {today}。请根据以下信息生成一份中文的每日科技简报。
+        prompt = f"""今日是 {today}。请根据以下信息生成一份详细的中文每日科技简报。
 
 ## 每日科技热点
 {tech_section}
@@ -97,7 +86,14 @@ Toutiao Hot Topics (for generating comments)
 ## 今日头条
 {headlines_section}
 
-请用简洁明了的中文撰写，突出重点，每个板块保留指定数量的最精彩内容，并给出简短的点评。
+请用详细生动的中文撰写，要求：
+1. 必须包含以上所有提供的内容，不要遗漏任何一条
+2. 每条新闻/热点需要详细展开，字数在200字左右，包括：
+   - 简要介绍事件背景
+   - 核心内容和关键信息
+   - 对行业或用户的影响
+   - 简短点评或展望
+3. 突出重点，语言生动有趣
 
 特别注意今日头条部分的要求：
 - Not allowed to add any links (https://)
@@ -108,11 +104,12 @@ Toutiao Hot Topics (for generating comments)
 
 ## 今日头条评论建议
 为今日头条热点生成适合直接发布到头条的评论，要求：
-1. 每个热点一条评论
-2. 评论内容要简洁有力，适合社交媒体传播
-3. 可以表达观点、提问或引发讨论
-4. 避免敏感话题
-5. 字数控制在20-50字之间
+1. 每个热点生成1-2条评论
+2. 每条评论字数在100-200字之间，要有深度和观点
+3. 可以包含个人见解、行业分析、引发讨论的问题
+4. 语言要自然、接地气，像真人写的评论
+5. 避免敏感话题
+6. 可以适当使用一些网络流行语或表情符号
 
 请将评论放在"今日头条评论建议"部分，格式为：
 - 热点标题：评论内容
@@ -216,7 +213,7 @@ class Config:
         self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api/v1')
         # Ensure base URL ends without trailing slash for consistent path joining
         self.api_base_url = self.api_base_url.rstrip('/')
-        self.max_tokens = int(os.getenv('MAX_TOKENS', '20000'))
+        self.max_tokens = int(os.getenv('MAX_TOKENS', '100000'))
         self.timeout = int(os.getenv('TIMEOUT', '60'))
         self.max_retries = int(os.getenv('MAX_RETRIES', '3'))
 
