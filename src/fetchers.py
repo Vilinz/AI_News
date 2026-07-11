@@ -61,7 +61,9 @@ def fetch_rss_news(feed_urls: List[str], limit: int = 5) -> List[Dict]:
         print(f"正在处理 RSS 源: {url}")
         try:
             print(f"  正在请求 RSS 源...")
-            feed = feedparser.parse(url, timeout=30)  # 添加超时
+            response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=30)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
             feed_title = feed.feed.get('title', url)
             print(f"  [成功] 获取 RSS 源: {feed_title}, 包含 {len(feed.entries)} 条新闻")
 
