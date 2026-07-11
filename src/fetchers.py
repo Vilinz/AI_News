@@ -246,7 +246,6 @@ def fetch_all_news() -> Dict:
     # 导入配置
     from generator import config
     import signal
-    import timeout_decorator
 
     print("\n" + "="*50)
     print("开始获取每日新闻数据")
