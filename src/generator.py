@@ -206,7 +206,7 @@ class Config:
         # API 配置
         self.api_key = os.getenv('API_KEY') or os.getenv('GLM_API_KEY')
         self.model = os.getenv('MODEL', os.getenv('GLM_MODEL', 'openrouter/free'))
-        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api/v1')
+        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai')
         # Ensure base URL ends without trailing slash for consistent path joining
         self.api_base_url = self.api_base_url.rstrip('/')
         # Auto-append /v1 for OpenRouter if missing
