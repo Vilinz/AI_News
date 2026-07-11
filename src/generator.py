@@ -209,6 +209,9 @@ class Config:
         self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api/v1')
         # Ensure base URL ends without trailing slash for consistent path joining
         self.api_base_url = self.api_base_url.rstrip('/')
+        # Auto-append /v1 for OpenRouter if missing
+        if 'openrouter.ai' in self.api_base_url and not self.api_base_url.endswith('/v1'):
+            self.api_base_url += '/v1'
         self.max_tokens = int(os.getenv('MAX_TOKENS', '20000'))
         self.timeout = int(os.getenv('TIMEOUT', '60'))
         self.max_retries = int(os.getenv('MAX_RETRIES', '3'))
