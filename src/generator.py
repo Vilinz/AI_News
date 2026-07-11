@@ -205,8 +205,8 @@ class Config:
     def __init__(self):
         # API 配置
         self.api_key = os.getenv('API_KEY') or os.getenv('GLM_API_KEY')
-        self.model = os.getenv('MODEL', os.getenv('GLM_MODEL', 'glm-4-flash'))
-        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://open.bigmodel.cn/api/paas/v4')
+        self.model = os.getenv('MODEL', os.getenv('GLM_MODEL', 'openrouter/free'))
+        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api')
         self.max_tokens = int(os.getenv('MAX_TOKENS', '20000'))
         self.timeout = int(os.getenv('TIMEOUT', '60'))
         self.max_retries = int(os.getenv('MAX_RETRIES', '3'))
