@@ -1,6 +1,6 @@
 # Todo List
 
-## 今日头条热点抓取 (Todo)
+## Toutiao Hot Topics Grabbing (Todo)
 
 ### 已实现
 - ✅ 添加了 `toutiao_hot` 到 CRAWL_SOURCES 配置

@@ -199,7 +199,7 @@ from datetime import datetime
 
 
 class Config:
-    """配置管理类，支持从环境变量和 GitHub Secrets 加载配置"""
+    """Configuration management class, supports loading configuration from environment variables and GitHub Secrets"""
 
     def __init__(self):
         # API 配置
