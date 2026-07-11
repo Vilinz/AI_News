@@ -1,6 +1,7 @@
 import smtplib
 import ssl
 import os
+import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
@@ -111,7 +112,10 @@ class EmailSender:
                     in_list = False
                 # 特殊处理今日头条章节
                 if '今日头条' in line:
-                    html_lines.append('<h4>今日头条</h4>')
+                    if '评论建议' in line:
+                        html_lines.append('<h4>今日头条评论建议</h4>')
+                    else:
+                        html_lines.append('<h4>今日头条</h4>')
                 else:
                     html_lines.append(f'<h2>{line[3:]}</h2>')
             elif line.startswith('**') and line.endswith('**'):
@@ -129,12 +133,24 @@ class EmailSender:
                 if not in_list:
                     html_lines.append('<ul>')
                     in_list = True
-                html_lines.append(f'<li>{line[2:]}</li>')
+                # 处理今日头条的无序列表
+                if '今日头条' in ''.join(html_lines[-5:]) and in_list:
+                    html_lines.append(f'<li style="margin-bottom: 10px;">{line[2:]}</li>')
+                else:
+                    html_lines.append(f'<li>{line[2:]}</li>')
             elif line.startswith('-'):
                 if not in_list:
                     html_lines.append('<ul>')
                     in_list = True
                 html_lines.append(f'<li>{line[1:]}</li>')
+            # 处理编号列表（如AI生成的）
+            elif re.match(r'^\d+\.', line.strip()):
+                if not in_list:
+                    html_lines.append('<ul>')
+                    in_list = True
+                # 移除编号
+                content = re.sub(r'^\d+\.\s*', '', line.strip())
+                html_lines.append(f'<li>{content}</li>')
             elif line.strip() == '':
                 if in_list:
                     html_lines.append('</ul>')

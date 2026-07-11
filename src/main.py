@@ -30,13 +30,16 @@ def main():
     print(f"✅ 数据获取完成：")
     print(f"   - 科技新闻：{len(news_data['tech_news'])} 条")
     print(f"   - AI新闻：{len(news_data['ai_news'])} 条")
-    print(f"   - GitHub项目：{len(news_data['github_trending'])} 个\n")
+    print(f"   - GitHub项目：{len(news_data['github_trending'])} 个")
+    print(f"   - 今日头条热点：{len(news_data.get('toutiao_hot', []))} 条\n")
 
     # 2. 生成摘要
     print("🤖 第二步：生成AI摘要...")
     print("-" * 40)
     print(f"正在使用 {config.model} 模型生成摘要...")
+    print("开始调用 AI API...")
     generator = GLMContentGenerator()
+    print("正在生成摘要，这可能需要几秒钟...")
     summary = generator.generate_summary(news_data)
     print("-" * 40)
     print("✅ 摘要生成完成！")

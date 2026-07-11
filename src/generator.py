@@ -38,6 +38,12 @@ class GLMContentGenerator:
             for item in news_data['github_trending']
         ])
 
+        # 构建今日头条热点（用于生成评论）
+        toutiao_hot_section = "\n".join([
+            f"- {item['title']}"
+            for item in news_data.get('toutiao_hot', [])
+        ])
+
         # 构建今日头条内容（不带链接）
         tech_headlines = "\n".join([
             f"- {item['title']}\n  {item['summary']}"
@@ -49,19 +55,33 @@ class GLMContentGenerator:
             for item in news_data['ai_news'][:2]  # AI热点精选2条
         ])
 
+        # 构建今日头条内容（不带链接，不编号）
+        tech_headlines = "\n".join([
+            f"- {item['title']}\n  {item['summary']}"
+            for item in news_data['tech_news'][:3]  # 科技热点精选3条
+        ])
+
+        ai_headlines = "\n".join([
+            f"- {item['title']}\n  {item['summary']}"
+            for item in news_data['ai_news'][:2]  # AI热点精选2条
+        ])
+
         github_headlines = "\n".join([
-            f"- {item['name']} - {item['description']} (⭐ {item['stars']})"
+            f"- {item['name']}\n  {item['description']} (⭐ {item['stars']})"
             for item in news_data['github_trending'][:2]  # GitHub精选2条
         ])
 
-        headlines_section = f"""**科技热点**
+        headlines_section = f"""科技热点
 {tech_headlines}
 
-**AI热点**
+AI热点
 {ai_headlines}
 
-**GitHub热门**
-{github_headlines}"""
+GitHub热门
+{github_headlines}
+
+今日头条热点（用于生成评论）
+{toutiao_hot_section}"""
 
         prompt = f"""今日是 {today}。请根据以下信息生成一份中文的每日科技简报。
 
@@ -77,22 +97,42 @@ class GLMContentGenerator:
 ## 今日头条
 {headlines_section}
 
-请用简洁明了的中文撰写，突出重点，每个板块保留3-5条最精彩的内容，并给出简短的点评。
-重要：在输出时，每条新闻必须保留原始链接，格式为「标题 | 链接」"""
+请用简洁明了的中文撰写，突出重点，每个板块保留指定数量的最精彩内容，并给出简短的点评。
 
+特别注意今日头条部分的要求：
+- 不允许添加任何链接（https://）
+- 不允许添加编号（1. 2. 3.）
+- 只能使用简单的无序列表（- 开头）
+- 格式：标题占一行，内容换行显示
+- 必须包含科技热点、AI热点、GitHub热门三个分类
+
+## 今日头条评论建议
+为今日头条热点生成适合直接发布到头条的评论，要求：
+1. 每个热点一条评论
+2. 评论内容要简洁有力，适合社交媒体传播
+3. 可以表达观点、提问或引发讨论
+4. 避免敏感话题
+5. 字数控制在20-50字之间
+
+请将评论放在"今日头条评论建议"部分，格式为：
+- 热点标题：评论内容
         # 使用配置参数
         timeout = self.timeout
 
         for attempt in range(self.max_retries):
             try:
+                print(f"  尝试 {attempt + 1}/{self.max_retries}: 发送请求到 {self.base_url}")
+                request_data = {
+                    "model": config.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": self.max_tokens
+                }
+                print(f"  请求数据大小: {len(str(request_data))} 字符")
+
                 response = requests.post(
                     f"{self.base_url}/chat/completions",
                     headers=config.get_api_headers(),
-                    json={
-                        "model": config.model,
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": self.max_tokens
-                    },
+                    json=request_data,
                     timeout=timeout
                 )
                 response.raise_for_status()
