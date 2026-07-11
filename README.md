@@ -47,7 +47,7 @@
 | Secret | 默认值 | 说明 |
 |--------|--------|------|
 | `MODEL` | `glm-4-flash` | 使用的模型名称 |
-| `API_BASE_URL` | `https://openrouter.ai/api` | API 基础 URL |
+| `API_BASE_URL` | `https://openrouter.ai` | API 基础 URL |
 | `MAX_TOKENS` | `20000` | 最大生成 token 数 |
 | `TIMEOUT` | `60` | 请求超时时间（秒） |
 | `MAX_RETRIES` | `3` | 最大重试次数 |
