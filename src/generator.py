@@ -206,7 +206,9 @@ class Config:
         # API 配置
         self.api_key = os.getenv('API_KEY') or os.getenv('GLM_API_KEY')
         self.model = os.getenv('MODEL', os.getenv('GLM_MODEL', 'openrouter/free'))
-        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api')
+        self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://openrouter.ai/api/v1')
+        # Ensure base URL ends without trailing slash for consistent path joining
+        self.api_base_url = self.api_base_url.rstrip('/')
         self.max_tokens = int(os.getenv('MAX_TOKENS', '20000'))
         self.timeout = int(os.getenv('TIMEOUT', '60'))
         self.max_retries = int(os.getenv('MAX_RETRIES', '3'))
