@@ -101,15 +101,35 @@ class GLMContentGenerator:
                 # 根据不同的 API 格式处理响应
                 if 'choices' in result:
                     # OpenAI/GLM 格式
-                    return result['choices'][0]['message']['content']
+                    content = result['choices'][0]['message']['content']
                 elif 'content' in result:
                     # 直接返回内容
-                    return result['content']
+                    content = result['content']
                 elif 'response' in result:
                     # 其他格式
-                    return result['response']
+                    content = result['response']
                 else:
-                    return str(result)
+                    content = str(result)
+
+                # 调试：检查是否包含今日头条
+                if '## 今日头条' in content:
+                    print("✅ 今日头条部分已生成")
+                    # 查找今日头条部分
+                    lines = content.split('\n')
+                    for i, line in enumerate(lines):
+                        if '## 今日头条' in line:
+                            print(f"今日头条开始于第 {i+1} 行")
+                            # 打印前几行作为示例
+                            for j in range(i, min(i+10, len(lines))):
+                                if lines[j].strip():
+                                    print(f"  {j+1}: {lines[j]}")
+                            break
+                else:
+                    print("❌ 未找到今日头条部分！")
+                    print("AI 生成的内容摘要（前500字符）：")
+                    print(content[:500])
+
+                return content
 
             except Timeout as e:
                 if attempt < max_retries - 1:

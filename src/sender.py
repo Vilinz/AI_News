@@ -120,7 +120,11 @@ class EmailSender:
                 if in_list:
                     html_lines.append('</ul>')
                     in_list = False
-                html_lines.append(f'<h5 style="color: #e74c3c; margin-top: 15px;">{content}</h5>')
+                # 检查是否是子分类标题
+                if content in ['科技热点', 'AI热点', 'GitHub热门']:
+                    html_lines.append(f'<h5 style="color: #e74c3c; margin-top: 10px; margin-bottom: 5px;">{content}</h5>')
+                else:
+                    html_lines.append(f'<p><strong>{content}</strong></p>')
             elif line.startswith('- ') or line.startswith('* '):
                 if not in_list:
                     html_lines.append('<ul>')
