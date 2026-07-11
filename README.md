@@ -38,7 +38,7 @@
 | Secret | 说明 | 示例 |
 |--------|------|------|
 | `API_KEY` | AI 模型 API 密钥 | `sk-xxx` 或 `glm-xxx` |
-| `EMAIL_FROM` | 发件邮箱（自动检测 SMTP） | `your_email@gmail.com` |
+| `EMAIL_FROM` | 发件邮箱 | `your_email@gmail.com` |
 | `EMAIL_PASSWORD` | 邮箱授权码 | `your_app_password` |
 | `EMAIL_TO` | 收件邮箱 | `recipient@example.com` |
 
@@ -48,15 +48,28 @@
 |--------|--------|------|
 | `MODEL` | `glm-4-flash` | 使用的模型名称 |
 | `API_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4` | API 基础 URL |
-| `MAX_TOKENS` | `2000` | 最大生成 token 数 |
+| `MAX_TOKENS` | `20000` | 最大生成 token 数 |
 | `TIMEOUT` | `60` | 请求超时时间（秒） |
 | `MAX_RETRIES` | `3` | 最大重试次数 |
 | `MAX_TECH_NEWS` | `10` | 科技新闻最大数量 |
 | `MAX_AI_NEWS` | `10` | AI 新闻最大数量 |
 | `MAX_GITHUB_REPOS` | `10` | GitHub 项目最大数量 |
-| `EMAIL_SERVER` | 自动检测 | SMTP 服务器 |
-| `EMAIL_PORT` | 自动检测 | SMTP 端口 |
 | `EMAIL_USE_TLS` | `true` | 是否启用 TLS |
+
+### 自动检测的邮箱配置
+
+系统会根据发件邮箱自动配置 SMTP 服务器和端口：
+
+| 邮箱类型 | SMTP 服务器 | 端口 | 协议 |
+|---------|-------------|------|------|
+| Gmail | smtp.gmail.com | 587 | TLS |
+| QQ 邮箱 | smtp.qq.com | 465 | SSL |
+| 163 邮箱 | smtp.163.com | 465 | SSL |
+| 126 邮箱 | smtp.126.com | 465 | SSL |
+| Outlook | smtp-mail.outlook.com | 587 | TLS |
+| Hotmail | smtp-mail.outlook.com | 587 | TLS |
+
+其他邮箱默认使用 Gmail 配置。
 
 ### 兼容性
 

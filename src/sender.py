@@ -9,26 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-SMTP_CONFIGS = {
-    'qq.com': {'server': 'smtp.qq.com', 'port': 465},
-    '163.com': {'server': 'smtp.163.com', 'port': 465},
-    '126.com': {'server': 'smtp.126.com', 'port': 465},
-    'gmail.com': {'server': 'smtp.gmail.com', 'port': 587},
-    'outlook.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
-    'hotmail.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
-    'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 587},
-}
-
-
-def detect_smtp_config(email: str) -> dict:
-    """根据邮箱后缀自动检测 SMTP 配置"""
-    if not email:
-        return {'server': 'smtp.gmail.com', 'port': 587}
-    email = email.lower().strip()
-    for domain, config in SMTP_CONFIGS.items():
-        if email.endswith(f'@{domain}'):
-            return config
-    return {'server': 'smtp.gmail.com', 'port': 587}
 
 
 class EmailSender:
@@ -36,6 +16,9 @@ class EmailSender:
         if config:
             self.config = config
         else:
+            # 导入全局配置
+            from generator import config
+
             # 使用全局配置
             self.config = {
                 'from_addr': config.email_from,

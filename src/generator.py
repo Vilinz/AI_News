@@ -146,7 +146,7 @@ class Config:
         self.api_key = os.getenv('API_KEY') or os.getenv('GLM_API_KEY')
         self.model = os.getenv('MODEL', os.getenv('GLM_MODEL', 'glm-4-flash'))
         self.api_base_url = os.getenv('API_BASE_URL') or os.getenv('GLM_BASE_URL', 'https://open.bigmodel.cn/api/paas/v4')
-        self.max_tokens = int(os.getenv('MAX_TOKENS', '2000'))
+        self.max_tokens = int(os.getenv('MAX_TOKENS', '20000'))
         self.timeout = int(os.getenv('TIMEOUT', '60'))
         self.max_retries = int(os.getenv('MAX_RETRIES', '3'))
 
@@ -154,9 +154,20 @@ class Config:
         self.email_from = os.getenv('EMAIL_FROM')
         self.email_password = os.getenv('EMAIL_PASSWORD')
         self.email_to = os.getenv('EMAIL_TO')
-        self.email_server = os.getenv('EMAIL_SERVER', 'smtp.gmail.com')
-        self.email_port = int(os.getenv('EMAIL_PORT', '587'))
         self.email_use_tls = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
+
+        # 根据邮箱后缀自动配置 SMTP
+        smtp_config = self._detect_smtp_config(self.email_from)
+        self.email_server = smtp_config['server']
+        self.email_port = smtp_config['port']
+
+        # 验证必需的配置项
+        required_fields = {
+            'API_KEY': self.api_key,
+            'EMAIL_FROM': self.email_from,
+            'EMAIL_PASSWORD': self.email_password,
+            'EMAIL_TO': self.email_to,
+        }
 
         # 新闻配置
         self.max_tech_news = int(os.getenv('MAX_TECH_NEWS', '10'))
@@ -179,12 +190,38 @@ class Config:
         if missing_fields:
             raise ValueError(f"缺少必需的配置项: {', '.join(missing_fields)}")
 
+        # 确保 email_port 是整数
+        self.email_port = int(self.email_port)
+
     def get_api_headers(self) -> Dict:
         """获取 API 请求头（兼容 GLM 和其他模型）"""
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+
+    def _detect_smtp_config(self, email: str) -> dict:
+        """根据邮箱后缀自动检测 SMTP 配置"""
+        if not email:
+            return {'server': 'smtp.gmail.com', 'port': 587}
+
+        email = email.lower().strip()
+        SMTP_CONFIGS = {
+            'qq.com': {'server': 'smtp.qq.com', 'port': 465},
+            '163.com': {'server': 'smtp.163.com', 'port': 465},
+            '126.com': {'server': 'smtp.126.com', 'port': 465},
+            'gmail.com': {'server': 'smtp.gmail.com', 'port': 587},
+            'outlook.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
+            'hotmail.com': {'server': 'smtp-mail.outlook.com', 'port': 587},
+            'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 587},
+        }
+
+        for domain, config in SMTP_CONFIGS.items():
+            if email.endswith(f'@{domain}'):
+                return config
+
+        # 默认返回 Gmail 配置
+        return {'server': 'smtp.gmail.com', 'port': 587}
 
     def to_dict(self) -> Dict:
         """返回配置字典（不包含敏感信息）"""
