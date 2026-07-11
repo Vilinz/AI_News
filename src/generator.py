@@ -22,7 +22,7 @@ class GLMContentGenerator:
         """使用 GLM 生成每日摘要"""
         today = str(datetime.now().date())
 
-        # 构建输入内容（包含链接）
+        # Build input content (including links)
         tech_section = "\n".join([
             f"- {item['title']} | {item['link']}\n  {item['summary']}"
             for item in news_data['tech_news']
@@ -38,13 +38,13 @@ class GLMContentGenerator:
             for item in news_data['github_trending']
         ])
 
-        # 构建今日头条热点（用于生成评论）
+        # Build toutiao hot topics (for generating comments)
         toutiao_hot_section = "\n".join([
             f"- {item['title']}"
             for item in news_data.get('toutiao_hot', [])
         ])
 
-        # 构建今日头条内容（不带链接）
+        # Build toutiao content (without links)
         tech_headlines = "\n".join([
             f"- {item['title']}\n  {item['summary']}"
             for item in news_data['tech_news'][:3]  # 科技热点精选3条
@@ -55,7 +55,7 @@ class GLMContentGenerator:
             for item in news_data['ai_news'][:2]  # AI热点精选2条
         ])
 
-        # 构建今日头条内容（不带链接，不编号）
+        # Build toutiao content (without links, no numbering)
         tech_headlines = "\n".join([
             f"- {item['title']}\n  {item['summary']}"
             for item in news_data['tech_news'][:3]  # 科技热点精选3条
@@ -80,7 +80,7 @@ AI热点
 GitHub热门
 {github_headlines}
 
-今日头条热点（用于生成评论）
+Toutiao Hot Topics (for generating comments)
 {toutiao_hot_section}"""
 
         prompt = f"""今日是 {today}。请根据以下信息生成一份中文的每日科技简报。
@@ -100,9 +100,9 @@ GitHub热门
 请用简洁明了的中文撰写，突出重点，每个板块保留指定数量的最精彩内容，并给出简短的点评。
 
 特别注意今日头条部分的要求：
-- 不允许添加任何链接（https://）
-- 不允许添加编号（1. 2. 3.）
-- 只能使用简单的无序列表（- 开头）
+- Not allowed to add any links (https://)
+- Not allowed to add numbering (1. 2. 3.)
+- Can only use simple unordered lists (- prefix)
 - 格式：标题占一行，内容换行显示
 - 必须包含科技热点、AI热点、GitHub热门三个分类
 
@@ -166,7 +166,7 @@ GitHub热门
                             break
                 else:
                     print("❌ 未找到今日头条部分！")
-                    print("AI 生成的内容摘要（前500字符）：")
+                    print("AI generated content summary (first 500 characters):")
                     print(content[:500])
 
                 return content
@@ -254,7 +254,7 @@ class Config:
         self.email_port = int(self.email_port)
 
     def get_api_headers(self) -> Dict:
-        """获取 API 请求头（兼容 GLM 和其他模型）"""
+        """Get API request headers (compatible with GLM and other models)"""
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -284,7 +284,7 @@ class Config:
         return {'server': 'smtp.gmail.com', 'port': 587}
 
     def to_dict(self) -> Dict:
-        """返回配置字典（不包含敏感信息）"""
+        """Return configuration dictionary (excluding sensitive information)"""
         return {
             'model': self.model,
             'api_base_url': self.api_base_url,
