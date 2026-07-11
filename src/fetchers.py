@@ -41,7 +41,7 @@ CRAWL_SOURCES = {
         'desc_selector': '.summary',
     },
     'toutiao_hot': {
-        'url': 'https://www.toutiao.com/hot/',
+        'url': 'https://www.toutiao.com/',
         'list_selector': '.HotItem_title, .hot-item-title, .trending-item, [class*="HotItem"], [class*="hot-item"], .hot-list li',
         'title_selector': 'a',
         'link_selector': 'a',
@@ -187,54 +187,41 @@ def fetch_crawl_news(source_name: str, limit: int = 5) -> List[Dict]:
 
 def fetch_toutiao_hot(limit: int = 5) -> List[Dict]:
     """抓取今日头条热门搜索"""
-    config = CRAWL_SOURCES.get('toutiao_hot')
-    if not config:
-        return []
-
     print(f"\n[今日头条热点]")
     print(f"正在抓取今日头条热点，限制 {limit} 条")
-    print(f"请求 URL: {config['url']}")
 
     try:
-        print(f"  正在请求今日头条...")
-        response = requests.get(config['url'], headers={
+        print(f"  正在请求今日头条 API...")
+        api_url = 'https://www.toutiao.com/api/pc/feed/?category=news_hot&utm_source=toutiao'
+        response = requests.get(api_url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Referer': 'https://www.toutiao.com/'
         }, timeout=15)
         print(f"  [成功] 获取响应，状态码: {response.status_code}")
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, 'html.parser')
+        data = response.json()
         articles = []
-        items = soup.select(config['list_selector'])
-        print(f"  页面找到 {len(items)} 个热点元素")
 
-        count = 0
-        for item in items[:limit]:
-            if count >= limit:
-                break
+        hot_list = data.get('data', [])
+        print(f"  API 返回 {len(hot_list)} 条热点")
 
-            title_elem = item.select_one(config['title_selector'])
-            if title_elem:
-                title = title_elem.get_text(strip=True)
-                link = title_elem.get('href', '')
+        for item in hot_list[:limit]:
+            title = item.get('title', '')
+            source = item.get('source', '')
+            # Build article URL from group_id or item_id
+            group_id = item.get('group_id', item.get('item_id', ''))
+            url = f'https://www.toutiao.com/article/{group_id}/' if group_id else ''
 
-                # 构建完整链接
-                if link and not link.startswith('http'):
-                    if link.startswith('/'):
-                        link = 'https://www.toutiao.com' + link
-                    else:
-                        link = 'https://www.toutiao.com/' + link
-
+            if title:
                 articles.append({
                     'title': title,
-                    'link': link,
-                    'summary': '',
+                    'link': url,
+                    'summary': f'来源: {source}' if source else '',
                     'published': '',
                     'source': '今日头条热门'
                 })
-                print(f"  [成功] {count+1}. {title}")
-                count += 1
+                print(f"  [成功] {len(articles)}. {title}")
 
         print(f"[成功] 今日头条热点抓取完成，共 {len(articles)} 条")
         return articles
