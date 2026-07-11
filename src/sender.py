@@ -36,27 +36,13 @@ class EmailSender:
         if config:
             self.config = config
         else:
-            from_addr = os.getenv('EMAIL_FROM')
-
-            # 自动检测 SMTP 配置
-            smtp_config = detect_smtp_config(from_addr)
-
-            # 允许手动覆盖（非空值才使用）
-            email_server = os.getenv('EMAIL_SERVER')
-            port_str = os.getenv('EMAIL_PORT')
-
-            try:
-                port = int(port_str) if port_str and port_str.strip() else smtp_config['port']
-            except ValueError:
-                print(f"Invalid EMAIL_PORT: {port_str}, using default {smtp_config['port']}")
-                port = smtp_config['port']
-
+            # 使用全局配置
             self.config = {
-                'from_addr': from_addr,
-                'password': os.getenv('EMAIL_PASSWORD'),
-                'to_addr': os.getenv('EMAIL_TO'),
-                'server': email_server if email_server and email_server.strip() else smtp_config['server'],
-                'port': port
+                'from_addr': config.email_from,
+                'password': config.email_password,
+                'to_addr': config.email_to,
+                'server': config.email_server,
+                'port': config.email_port
             }
 
         self._validate_config()
@@ -109,6 +95,8 @@ class EmailSender:
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }}
                 h2 {{ color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }}
                 h3 {{ color: #555; }}
+                h4 {{ color: #e74c3c; border-bottom: 1px solid #f39c12; padding-bottom: 5px; }}  /* 今日头条使用红色 */
+                h5 {{ color: #e74c3c; font-weight: bold; margin-top: 10px; }}  /* 子分类标题 */
                 a {{ color: #4CAF50; text-decoration: none; }}
                 a:hover {{ text-decoration: underline; }}
                 .footer {{ margin-top: 30px; font-size: 12px; color: #888; }}
@@ -138,7 +126,18 @@ class EmailSender:
                 if in_list:
                     html_lines.append('</ul>')
                     in_list = False
-                html_lines.append(f'<h2>{line[3:]}</h2>')
+                # 特殊处理今日头条章节
+                if '今日头条' in line:
+                    html_lines.append('<h4>今日头条</h4>')
+                else:
+                    html_lines.append(f'<h2>{line[3:]}</h2>')
+            elif line.startswith('**') and line.endswith('**'):
+                # 处理加粗文本（如：**科技热点**）
+                content = line.strip('**')
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                html_lines.append(f'<h5 style="color: #e74c3c; margin-top: 15px;">{content}</h5>')
             elif line.startswith('- ') or line.startswith('* '):
                 if not in_list:
                     html_lines.append('<ul>')

@@ -3,15 +3,20 @@
 每日科技/AI 热点推送服务主入口
 """
 import os
+import json
 from datetime import datetime
 
 from fetchers import fetch_all_news
-from generator import GLMContentGenerator
+from generator import GLMContentGenerator, config
 from sender import EmailSender
 
 
 def main():
     print(f"Starting daily news fetch for {datetime.now().date()}")
+
+    # 打印配置信息（不包含敏感信息）
+    print("Current configuration:")
+    print(json.dumps(config.to_dict(), indent=2, ensure_ascii=False))
 
     # 1. 获取数据
     print("Fetching news data...")
@@ -19,7 +24,7 @@ def main():
     print(f"Found {len(news_data['tech_news'])} tech news, {len(news_data['ai_news'])} AI news, {len(news_data['github_trending'])} GitHub projects")
 
     # 2. 生成摘要
-    print("Generating summary with GLM...")
+    print(f"Generating summary with {config.model}...")
     generator = GLMContentGenerator()
     summary = generator.generate_summary(news_data)
     print("Summary generated successfully")

@@ -1,12 +1,14 @@
 # 每日科技/AI 热点推送服务
 
-通过 GitHub Actions 定时运行，使用 GLM 模型生成摘要并推送每日热点到邮箱。
+通过 GitHub Actions 定时运行，支持多种 AI 模型生成摘要并推送每日热点到邮箱。
 
 ## 功能
 
 - 每日科技热点
 - 每日 AI 热点
 - GitHub 热门项目
+- 今日头条（无链接版本）
+- 支持多种 AI 模型（GLM、OpenAI 等）
 
 ## 数据源
 
@@ -29,23 +31,71 @@
 
 ## 配置
 
-在 GitHub Secrets 中设置：
+### 必需配置
+
+在 GitHub Secrets 中设置以下必需参数：
 
 | Secret | 说明 | 示例 |
 |--------|------|------|
-| `GLM_API_KEY` | GLM 模型 API 密钥 | - |
-| `EMAIL_FROM` | 发件邮箱（自动检测 SMTP） | `your_email@qq.com` |
-| `EMAIL_PASSWORD` | 邮箱授权码 | - |
-| `EMAIL_TO` | 收件邮箱 | - |
+| `API_KEY` | AI 模型 API 密钥 | `sk-xxx` 或 `glm-xxx` |
+| `EMAIL_FROM` | 发件邮箱（自动检测 SMTP） | `your_email@gmail.com` |
+| `EMAIL_PASSWORD` | 邮箱授权码 | `your_app_password` |
+| `EMAIL_TO` | 收件邮箱 | `recipient@example.com` |
 
-### 支持自动检测的邮箱
+### 可选配置
+
+| Secret | 默认值 | 说明 |
+|--------|--------|------|
+| `MODEL` | `glm-4-flash` | 使用的模型名称 |
+| `API_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4` | API 基础 URL |
+| `MAX_TOKENS` | `2000` | 最大生成 token 数 |
+| `TIMEOUT` | `60` | 请求超时时间（秒） |
+| `MAX_RETRIES` | `3` | 最大重试次数 |
+| `MAX_TECH_NEWS` | `10` | 科技新闻最大数量 |
+| `MAX_AI_NEWS` | `10` | AI 新闻最大数量 |
+| `MAX_GITHUB_REPOS` | `10` | GitHub 项目最大数量 |
+| `EMAIL_SERVER` | 自动检测 | SMTP 服务器 |
+| `EMAIL_PORT` | 自动检测 | SMTP 端口 |
+| `EMAIL_USE_TLS` | `true` | 是否启用 TLS |
+
+### 兼容性
+
+为向后兼容，仍支持以下旧环境变量名：
+- `GLM_API_KEY` → `API_KEY`
+- `GLM_MODEL` → `MODEL`
+- `GLM_BASE_URL` → `API_BASE_URL`
+
+### 邮件内容格式
+
+包含以下章节：
+1. 每日科技热点（含链接）
+2. 每日 AI 热点（含链接）
+3. GitHub 热门项目（含链接）
+4. 今日头条（无链接版，包含精选内容）
+
+今日头条内容包括：
+- 科技热点：精选3条
+- AI热点：精选2条
+- GitHub热门：精选2条
+
+### 支持的邮箱
 
 | 邮箱 | SMTP 服务器 | 端口 |
 |------|-------------|------|
+| Gmail | smtp.gmail.com | 587 |
 | QQ 邮箱 | smtp.qq.com | 465 |
 | 163 邮箱 | smtp.163.com | 465 |
 | 126 邮箱 | smtp.126.com | 465 |
-| Gmail | smtp.gmail.com | 587 |
 | Outlook | smtp-mail.outlook.com | 587 |
 
-其他邮箱需手动配置 `EMAIL_SERVER` 和 `EMAIL_PORT`。
+其他邮箱建议手动配置 `EMAIL_SERVER` 和 `EMAIL_PORT`。
+
+### 模型支持
+
+本项目支持兼容 OpenAI API 格式的所有模型，包括：
+- GLM 系列（智谱 AI）
+- GPT 系列（OpenAI）
+- Claude 系列（Anthropic）
+- 其他兼容模型
+
+只需设置正确的 `API_KEY` 和 `API_BASE_URL` 即可。

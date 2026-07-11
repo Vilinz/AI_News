@@ -23,9 +23,25 @@ jobs:
 
       - name: Run news fetcher and sender
         env:
-          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          # API 配置
+          API_KEY: ${{ secrets.API_KEY }}
+          MODEL: ${{ secrets.MODEL || 'glm-4-flash' }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4' }}
+          MAX_TOKENS: ${{ secrets.MAX_TOKENS || '2000' }}
+          TIMEOUT: ${{ secrets.TIMEOUT || '60' }}
+          MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+
+          # 邮件配置
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SERVER: ${{ secrets.EMAIL_SERVER || 'smtp.gmail.com' }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT || '587' }}
+          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS || 'true' }}
+
+          # 新闻数量配置
+          MAX_TECH_NEWS: ${{ secrets.MAX_TECH_NEWS || '10' }}
+          MAX_AI_NEWS: ${{ secrets.MAX_AI_NEWS || '10' }}
+          MAX_GITHUB_REPOS: ${{ secrets.MAX_GITHUB_REPOS || '10' }}
         run: |
           python src/main.py

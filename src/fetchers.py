@@ -141,17 +141,20 @@ def fetch_crawl_news(source_name: str, limit: int = 5) -> List[Dict]:
 
 def fetch_all_news() -> Dict:
     """获取所有数据源"""
+    # 导入配置
+    from generator import config
+
     # RSS 新闻
-    tech_news = fetch_rss_news(RSS_FEEDS['tech'], limit=5)
-    ai_news = fetch_rss_news(RSS_FEEDS['ai'], limit=5)
+    tech_news = fetch_rss_news(RSS_FEEDS['tech'], limit=config.max_tech_news)
+    ai_news = fetch_rss_news(RSS_FEEDS['ai'], limit=config.max_ai_news)
 
     # 爬虫补充 AI 新闻
-    quantum_bit = fetch_crawl_news('quantum_bit', limit=3)
-    machine_heart = fetch_crawl_news('machine_heart', limit=3)
+    quantum_bit = fetch_crawl_news('quantum_bit', limit=config.max_ai_news // 2)
+    machine_heart = fetch_crawl_news('machine_heart', limit=config.max_ai_news // 2)
     ai_news.extend(quantum_bit + machine_heart)
 
     return {
-        'tech_news': tech_news[:5],
-        'ai_news': ai_news[:5],
-        'github_trending': fetch_github_trending(limit=5)
+        'tech_news': tech_news,
+        'ai_news': ai_news,
+        'github_trending': fetch_github_trending(limit=config.max_github_repos)
     }
