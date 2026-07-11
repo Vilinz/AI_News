@@ -136,6 +136,8 @@ Toutiao Hot Topics (for generating comments)
                     json=request_data,
                     timeout=timeout
                 )
+                print(f"  响应状态码: {response.status_code}")
+                print(f"  响应内容前200字符: {response.text[:200]}")
                 response.raise_for_status()
                 result = response.json()
 
@@ -186,10 +188,15 @@ Toutiao Hot Topics (for generating comments)
             except RequestException as e:
                 # 打印更详细的错误信息
                 print(f"请求失败详情:")
-                print(f"  - URL: {e.request.url if hasattr(e, 'request') else 'N/A'}")
-                print(f"  - 状态码: {e.response.status_code if hasattr(e, 'response') and e.response else 'N/A'}")
-                if hasattr(e, 'response') and e.response:
+                if e.request is not None:
+                    print(f"  - URL: {e.request.url}")
+                else:
+                    print(f"  - URL: N/A")
+                if hasattr(e, 'response') and e.response is not None:
+                    print(f"  - 状态码: {e.response.status_code}")
                     print(f"  - 响应内容: {e.response.text[:200]}...")
+                else:
+                    print(f"  - 状态码: N/A")
                 return f"生成摘要失败: {str(e)}"
 
             except Exception as e:
