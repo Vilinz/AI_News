@@ -18,6 +18,96 @@ class GLMContentGenerator:
         self.timeout = config.timeout
         self.max_retries = config.max_retries
 
+    def _call_ai_api(self, prompt: str) -> str:
+        """调用AI API生成内容"""
+        timeout = self.timeout
+
+        for attempt in range(self.max_retries):
+            try:
+                print(f"  尝试 {attempt + 1}/{self.max_retries}: 发送请求到 {self.base_url}")
+                request_data = {
+                    "model": config.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": self.max_tokens
+                }
+                print(f"  请求数据大小: {len(str(request_data))} 字符")
+
+                response = requests.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=config.get_api_headers(),
+                    json=request_data,
+                    timeout=timeout
+                )
+                print(f"  响应状态码: {response.status_code}")
+                print(f"  响应内容前200字符: {response.text[:200]}")
+                response.raise_for_status()
+                result = response.json()
+
+                # 根据不同的 API 格式处理响应
+                if 'choices' in result:
+                    content = result['choices'][0]['message']['content']
+                elif 'content' in result:
+                    content = result['content']
+                elif 'response' in result:
+                    content = result['response']
+                else:
+                    content = str(result)
+
+                return content
+
+            except Timeout as e:
+                if attempt < self.max_retries - 1:
+                    wait_time = min(2 ** attempt, 4)
+                    print(f"请求超时，{wait_time}秒后重试 (尝试 {attempt + 1}/{self.max_retries}): {e}")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"达到最大重试次数，请求超时: {e}")
+                    return f"生成失败: 请求超时 (已重试{self.max_retries}次)"
+
+            except RequestException as e:
+                print(f"请求失败详情:")
+                if e.request is not None:
+                    print(f"  - URL: {e.request.url}")
+                else:
+                    print(f"  - URL: N/A")
+                if hasattr(e, 'response') and e.response is not None:
+                    print(f"  - 状态码: {e.response.status_code}")
+                    print(f"  - 响应内容: {e.response.text[:200]}...")
+                else:
+                    print(f"  - 状态码: N/A")
+                return f"生成失败: {str(e)}"
+
+            except Exception as e:
+                print(f"未知错误: {e}")
+                return f"生成失败: {str(e)}"
+
+    def generate_toutiao_article(self, topic_title: str) -> str:
+        """为单个今日头条热点生成微头条文章"""
+        prompt = f"""请针对以下今日头条热点话题，撰写一篇适合发布在今日头条微头条的文章。
+
+热点话题：{topic_title}
+
+要求：
+1. 文章字数在500字左右
+2. 开头要吸引眼球，可以用反问、感叹或悬念引入
+3. 内容要有深度，包括：
+   - 事件背景和核心信息
+   - 相关分析和解读
+   - 个人观点或行业影响
+   - 引发读者思考或讨论
+4. 语言要生动有趣，接地气，像真人写的
+5. 适当使用一些修辞手法，增强可读性
+6. 结尾可以抛出问题或观点，引导读者评论互动
+7. 不要使用markdown格式，纯文本输出
+8. 不要添加任何链接
+
+请直接输出文章内容，不要添加标题或其他说明："""
+
+        print(f"\n  [生成微头条] {topic_title}")
+        content = self._call_ai_api(prompt)
+        return content
+
     def generate_summary(self, news_data: Dict) -> str:
         """使用 GLM 生成每日摘要"""
         today = str(datetime.now().date())
@@ -83,9 +173,6 @@ Toutiao Hot Topics (for generating comments)
 ## GitHub热门项目
 {github_section}
 
-## 今日头条
-{headlines_section}
-
 请用详细生动的中文撰写，要求：
 1. 必须包含以上所有提供的内容，不要遗漏任何一条
 2. 每条新闻/热点需要详细展开，字数在200字左右，包括：
@@ -94,111 +181,19 @@ Toutiao Hot Topics (for generating comments)
    - 对行业或用户的影响
    - 简短点评或展望
 3. 突出重点，语言生动有趣
-
-特别注意今日头条部分的要求：
-- Not allowed to add any links (https://)
-- Not allowed to add numbering (1. 2. 3.)
-- Can only use simple unordered lists (- prefix)
-- 格式：标题占一行，内容换行显示
-- 必须包含科技热点、AI热点、GitHub热门三个分类
-
-## 今日头条评论建议
-为今日头条热点生成适合直接发布到头条的评论，要求：
-1. 每个热点生成1-2条评论
-2. 每条评论字数在100-200字之间，要有深度和观点
-3. 可以包含个人见解、行业分析、引发讨论的问题
-4. 语言要自然、接地气，像真人写的评论
-5. 避免敏感话题
-6. 可以适当使用一些网络流行语或表情符号
-
-请将评论放在"今日头条评论建议"部分，格式为：
-- 热点标题：评论内容
+4. 使用markdown格式，用##区分板块
         """
-        # 使用配置参数
-        timeout = self.timeout
+        # 调用AI API生成摘要
+        content = self._call_ai_api(prompt)
+        
+        # 调试：检查生成的内容
+        if content:
+            print("✅ 摘要生成成功")
+            print(f"内容长度: {len(content)} 字符")
+        else:
+            print("❌ 摘要生成失败！")
 
-        for attempt in range(self.max_retries):
-            try:
-                print(f"  尝试 {attempt + 1}/{self.max_retries}: 发送请求到 {self.base_url}")
-                request_data = {
-                    "model": config.model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": self.max_tokens
-                }
-                print(f"  请求数据大小: {len(str(request_data))} 字符")
-
-                response = requests.post(
-                    f"{self.base_url}/chat/completions",
-                    headers=config.get_api_headers(),
-                    json=request_data,
-                    timeout=timeout
-                )
-                print(f"  响应状态码: {response.status_code}")
-                print(f"  响应内容前200字符: {response.text[:200]}")
-                response.raise_for_status()
-                result = response.json()
-
-                # 根据不同的 API 格式处理响应
-                if 'choices' in result:
-                    # OpenAI/GLM 格式
-                    content = result['choices'][0]['message']['content']
-                elif 'content' in result:
-                    # 直接返回内容
-                    content = result['content']
-                elif 'response' in result:
-                    # 其他格式
-                    content = result['response']
-                else:
-                    content = str(result)
-
-                # 调试：检查是否包含今日头条
-                if '## 今日头条' in content:
-                    print("✅ 今日头条部分已生成")
-                    # 查找今日头条部分
-                    lines = content.split('\n')
-                    for i, line in enumerate(lines):
-                        if '## 今日头条' in line:
-                            print(f"今日头条开始于第 {i+1} 行")
-                            # 打印前几行作为示例
-                            for j in range(i, min(i+10, len(lines))):
-                                if lines[j].strip():
-                                    print(f"  {j+1}: {lines[j]}")
-                            break
-                else:
-                    print("❌ 未找到今日头条部分！")
-                    print("AI generated content summary (first 500 characters):")
-                    print(content[:500])
-
-                return content
-
-            except Timeout as e:
-                if attempt < max_retries - 1:
-                    # 指数退避：2^attempt * 1秒，最多等待4秒
-                    wait_time = min(2 ** attempt, 4)
-                    print(f"请求超时，{wait_time}秒后重试 (尝试 {attempt + 1}/{max_retries}): {e}")
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    print(f"达到最大重试次数，请求超时: {e}")
-                    return f"生成摘要失败: 请求超时 (已重试{max_retries}次)"
-
-            except RequestException as e:
-                # 打印更详细的错误信息
-                print(f"请求失败详情:")
-                if e.request is not None:
-                    print(f"  - URL: {e.request.url}")
-                else:
-                    print(f"  - URL: N/A")
-                if hasattr(e, 'response') and e.response is not None:
-                    print(f"  - 状态码: {e.response.status_code}")
-                    print(f"  - 响应内容: {e.response.text[:200]}...")
-                else:
-                    print(f"  - 状态码: N/A")
-                return f"生成摘要失败: {str(e)}"
-
-            except Exception as e:
-                print(f"未知错误: {e}")
-                return f"生成摘要失败: {str(e)}"
+        return content
 
 from datetime import datetime
 
