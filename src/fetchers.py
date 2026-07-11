@@ -191,8 +191,8 @@ def fetch_toutiao_hot(limit: int = 5) -> List[Dict]:
     print(f"正在抓取今日头条热点，限制 {limit} 条")
 
     try:
-        print(f"  正在请求今日头条 API...")
-        api_url = 'https://www.toutiao.com/api/pc/feed/?category=news_hot&utm_source=toutiao'
+        print(f"  正在请求今日头条热榜 API...")
+        api_url = 'https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc'
         response = requests.get(api_url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Referer': 'https://www.toutiao.com/'
@@ -204,26 +204,24 @@ def fetch_toutiao_hot(limit: int = 5) -> List[Dict]:
         articles = []
 
         hot_list = data.get('data', [])
-        print(f"  API 返回 {len(hot_list)} 条热点")
+        print(f"  热榜共 {len(hot_list)} 条")
 
         for item in hot_list[:limit]:
-            title = item.get('title', '')
-            source = item.get('source', '')
-            # Build article URL from group_id or item_id
-            group_id = item.get('group_id', item.get('item_id', ''))
-            url = f'https://www.toutiao.com/article/{group_id}/' if group_id else ''
+            title = item.get('Title', '')
+            url = item.get('Url', '')
+            hot_value = item.get('HotValue', '')
 
             if title:
                 articles.append({
                     'title': title,
                     'link': url,
-                    'summary': f'来源: {source}' if source else '',
+                    'summary': f'热度: {hot_value}' if hot_value else '',
                     'published': '',
-                    'source': '今日头条热门'
+                    'source': '今日头条热榜'
                 })
                 print(f"  [成功] {len(articles)}. {title}")
 
-        print(f"[成功] 今日头条热点抓取完成，共 {len(articles)} 条")
+        print(f"[成功] 今日头条热榜抓取完成，共 {len(articles)} 条")
         return articles
     except Exception as e:
         print(f"  [错误] Error fetching toutiao hot: {e}")
