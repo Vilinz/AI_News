@@ -148,13 +148,28 @@ def fetch_all_news() -> Dict:
     tech_news = fetch_rss_news(RSS_FEEDS['tech'], limit=config.max_tech_news)
     ai_news = fetch_rss_news(RSS_FEEDS['ai'], limit=config.max_ai_news)
 
-    # 爬虫补充 AI 新闻
-    quantum_bit = fetch_crawl_news('quantum_bit', limit=config.max_ai_news // 2)
-    machine_heart = fetch_crawl_news('machine_heart', limit=config.max_ai_news // 2)
-    ai_news.extend(quantum_bit + machine_heart)
+    # 如果RSS获取的数量不足，使用爬虫补充
+    if config.max_ai_news > 0 and len(ai_news) < config.max_ai_news:
+        # 计算需要补充的数量
+        needed = config.max_ai_news - len(ai_news)
+
+        # 从量子位获取
+        quantum_bit = fetch_crawl_news('quantum_bit', limit=needed)
+        ai_news.extend(quantum_bit[:needed])
+
+        # 如果还需要更多，从机器之心获取
+        remaining = config.max_ai_news - len(ai_news)
+        if remaining > 0:
+            machine_heart = fetch_crawl_news('machine_heart', limit=remaining)
+            ai_news.extend(machine_heart[:remaining])
+
+    # 确保不超过配置的最大数量
+    tech_news = tech_news[:config.max_tech_news]
+    ai_news = ai_news[:config.max_ai_news]
+    github_trending = fetch_github_trending(limit=config.max_github_repos)
 
     return {
         'tech_news': tech_news,
         'ai_news': ai_news,
-        'github_trending': fetch_github_trending(limit=config.max_github_repos)
+        'github_trending': github_trending
     }

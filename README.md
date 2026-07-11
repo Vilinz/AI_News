@@ -52,7 +52,7 @@
 | `TIMEOUT` | `60` | 请求超时时间（秒） |
 | `MAX_RETRIES` | `3` | 最大重试次数 |
 | `MAX_TECH_NEWS` | `10` | 科技新闻最大数量 |
-| `MAX_AI_NEWS` | `10` | AI 新闻最大数量 |
+| `MAX_AI_NEWS` | `10` | AI 新闻最大数量（含 RSS + 爬虫） |
 | `MAX_GITHUB_REPOS` | `10` | GitHub 项目最大数量 |
 | `EMAIL_USE_TLS` | `true` | 是否启用 TLS |
 

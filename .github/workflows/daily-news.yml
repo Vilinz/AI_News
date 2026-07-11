@@ -27,7 +27,7 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
           MODEL: ${{ secrets.MODEL || 'glm-4-flash' }}
           API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4' }}
-          MAX_TOKENS: ${{ secrets.MAX_TOKENS || '2000' }}
+          MAX_TOKENS: ${{ secrets.MAX_TOKENS || '20000' }}
           TIMEOUT: ${{ secrets.TIMEOUT || '60' }}
           MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
 
