@@ -116,6 +116,7 @@ Toutiao Hot Topics (for generating comments)
 
 请将评论放在"今日头条评论建议"部分，格式为：
 - 热点标题：评论内容
+        """
         # 使用配置参数
         timeout = self.timeout
 
